@@ -59,8 +59,9 @@
     }
 
     function readScore(){
-        const scoresJsonReading = localStorage.getItem('scores');   //Map lee
+        const scoresJsonReading = localStorage.getItem('scores')||"0";   //Map lee
         const scoresObj = JSON.parse(scoresJsonReading);                //Json graba
+
         const newScores = new Map(Object.entries(scoresObj));           //Map carga
 
         if (newScores.size === 0) {
