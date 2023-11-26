@@ -28,24 +28,19 @@
     let texto = "";
     let scores = new Map();
 
-
-    readScore();
-
-
 // FUNCIONES
-    vBtnNuevoJuego.addEventListener("click", nuevoJuego);
-    vBtnPedirCarta.addEventListener('click', pedirCartaNueva);
-    vBtnDetener.addEventListener('click', detenerJugador);
-    vBtnNewScore.addEventListener('click', newScore)
+
+    inicio();
 
     function delay(texto) {
 
         setTimeout(() => alert(texto), 500);
     }
 
-    function creaZonaMarcadores(){
+    function creaZonaLocalStorage(){
         divScore.id = 'localScore';
         zonaBTNS.append(divScore);
+        divScore.innerHTML = '';    // Limpia la zona divScore de localStorage
     }
 
     function newScore(){
@@ -54,14 +49,22 @@
         const scoreObj = Object.fromEntries(scores);
         const scoresJson = JSON.stringify(scoreObj);
         localStorage.setItem('scores', scoresJson);
+        console.log('localStorage puesta a cero');
+        vBtnNewScore.removeEventListener('click',newScore);
+        readScore();
+    }
 
+    function inicio(){
+        vBtnNuevoJuego.addEventListener("click", nuevoJuego);
+        vBtnNewScore.addEventListener('click', newScore);
         readScore();
     }
 
     function readScore(){
+
+
         const scoresJsonReading = localStorage.getItem('scores')||"0";   //Map lee
         const scoresObj = JSON.parse(scoresJsonReading);                //Json graba
-
         const newScores = new Map(Object.entries(scoresObj));           //Map carga
 
         if (newScores.size === 0) {
@@ -69,20 +72,20 @@
             newScores.set("Jugador", 0);
             newScores.set("Compu", 0);
         }
-        creaZonaMarcadores();       // Crea la zona divScore
-        divScore.innerHTML = '';    // Limpia la zona divScore
+        creaZonaLocalStorage();
+
 
         // Iterar sobre los elementos del Map usando map()
         newScores.forEach((value, key) => {
             // Crear un elemento h2 para cada marcador
-            const h2Element = document.createElement('h4');
-            h2Element.textContent = `Partidas Ganadas por ${key}: ${value}`;
+            const h4Element = document.createElement('h4');
+            h4Element.textContent = `Partidas Ganadas por ${key}: ${value}`;
 
             // Agregar el elemento h2 al div creado anteriormente
-            divScore.append(h2Element);
+            divScore.append(h4Element);
 
         });
-        scores = newScores;
+        scores = newScores;   // iguala la variable map scores al localStorages
     }
 
     function addToScore(player, points) {
@@ -130,7 +133,6 @@
 
     function despiertaBotones() {
         vBtnPedirCarta.addEventListener('click', pedirCartaNueva);
-        vBtnDetener.addEventListener('click', detenerJugador);
         vBtnNewScore.addEventListener("click", newScore);
         //console.log(Botones Despertados);
     }
@@ -147,6 +149,10 @@
     }
 
     function pedirCartaNueva() {
+
+        vBtnNuevoJuego.removeEventListener('click', nuevoJuego);
+        vBtnDetener.addEventListener('click',detenerJugador);
+
         // recoge la carta de la baraja
         let nuevaCarta = cartasArray.pop();     // saca la carta de la baraja
         valor = devValorCarta(nuevaCarta);         // recupera int valor y actualiza variable global
@@ -228,7 +234,6 @@
     }
 
     function mensajes() {
-
         if (valorContPuntosJug <= maxPoint && valorContPuntosCompu <= maxPoint ){  // ninguno se pasó -> msg
             if (valorContPuntosJug == valorContPuntosCompu) {
                 texto = ("Lo sentimos pero en caso de empate gana la Casa");
@@ -254,6 +259,7 @@
                 delay(texto);
             }
         }
+
     }
 
 })()
