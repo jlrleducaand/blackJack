@@ -27,6 +27,7 @@
     let valor;
     let texto = "";
     let scores = new Map();
+    let cartaSobreMesa = false;
 
 // FUNCIONES
 
@@ -38,6 +39,11 @@
     function deshabilitarBoton(variable, boton){
         variable.removeEventListener('click', boton);
     }
+
+    function salidaNavegador(variable, boton){
+        variable.addEventListener('beforeunload', boton);
+    }
+
     function delay(texto) {
 
         setTimeout(() => alert(texto), 500);
@@ -64,6 +70,7 @@
     function inicio(){
         habilitarBoton(vBtnNuevoJuego, nuevoJuego);
         habilitarBoton(vBtnNewScore,newScore);
+        salidaNavegador(window, handleBeforeUnload);
         readLocalScore();
     }
 
@@ -136,6 +143,7 @@
         zContJug.textContent = valorContPuntosJug;
         valorContPuntosCompu = 0;
         zContCompu.textContent = valorContPuntosCompu;
+        cartaSobreMesa = false;
     }
 
     function despiertaBotones() {
@@ -161,6 +169,7 @@
     function pedirCartaNueva() {
         deshabilitarBoton(vBtnNuevoJuego, nuevoJuego);
         habilitarBoton(vBtnDetener, detenerJugador);
+        cartaSobreMesa = true;
 
         // recoge la carta de la baraja
         let nuevaCarta = cartasArray.pop();     // saca la carta de la baraja
@@ -271,6 +280,15 @@
         }
         habilitarBoton(vBtnNuevoJuego,nuevoJuego);
         deshabilitarBoton(vBtnDetener, detenerJugador);
+    }
+
+    function guardarVictoriaComputadora() {
+        addToScore("Compu", 1);
+    }
+
+    function handleBeforeUnload(){
+        // podria haber puesto directamente  addToScore()  pero asi queda mas legible
+        if(cartaSobreMesa == true)guardarVictoriaComputadora();
     }
 
 })()
