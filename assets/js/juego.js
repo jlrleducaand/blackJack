@@ -31,13 +31,19 @@
 // FUNCIONES
 
     inicio();
+    function habilitarBoton(variable, boton){
+        variable.addEventListener('click', boton);
+    }
 
+    function deshabilitarBoton(variable, boton){
+        variable.removeEventListener('click', boton);
+    }
     function delay(texto) {
 
         setTimeout(() => alert(texto), 500);
     }
 
-    function creaZonaLocalStorage(){
+    function creaZonaLocalStorageLimpia(){
         divScore.id = 'localScore';
         zonaBTNS.append(divScore);
         divScore.innerHTML = '';    // Limpia la zona divScore de localStorage
@@ -50,17 +56,18 @@
         const scoresJson = JSON.stringify(scoreObj);
         localStorage.setItem('scores', scoresJson);
         console.log('localStorage puesta a cero');
-        vBtnNewScore.removeEventListener('click',newScore);
-        readScore();
+
+        deshabilitarBoton(vBtnNewScore, newScore);
+        readLocalScore();
     }
 
     function inicio(){
-        vBtnNuevoJuego.addEventListener("click", nuevoJuego);
-        vBtnNewScore.addEventListener('click', newScore);
-        readScore();
+        habilitarBoton(vBtnNuevoJuego, nuevoJuego);
+        habilitarBoton(vBtnNewScore,newScore);
+        readLocalScore();
     }
 
-    function readScore(){
+    function readLocalScore(){
 
 
         const scoresJsonReading = localStorage.getItem('scores')||"0";   //Map lee
@@ -72,10 +79,10 @@
             newScores.set("Jugador", 0);
             newScores.set("Compu", 0);
         }
-        creaZonaLocalStorage();
+        creaZonaLocalStorageLimpia();
 
-
-        // Iterar sobre los elementos del Map usando map()
+        // Repintado / Machaca el marcador
+        // Iterar sobre los elementos del Map usando map() para rellenar la zona con los marcadores
         newScores.forEach((value, key) => {
             // Crear un elemento h2 para cada marcador
             const h4Element = document.createElement('h4');
@@ -101,7 +108,7 @@
         localStorage.setItem('scores', scoreJson);
 
         // Lee y Pinta los datos de localStorage.
-        readScore();
+        readLocalScore();
     }
 
     function creaBaraja() {
@@ -132,8 +139,11 @@
     }
 
     function despiertaBotones() {
-        vBtnPedirCarta.addEventListener('click', pedirCartaNueva);
-        vBtnNewScore.addEventListener("click", newScore);
+        habilitarBoton(vBtnPedirCarta, pedirCartaNueva);
+        deshabilitarBoton(vBtnNewScore, newScore);
+        deshabilitarBoton(vBtnNuevoJuego, nuevoJuego);
+        deshabilitarBoton(vBtnDetener, detenerJugador);
+
         //console.log(Botones Despertados);
     }
 
@@ -149,9 +159,8 @@
     }
 
     function pedirCartaNueva() {
-
-        vBtnNuevoJuego.removeEventListener('click', nuevoJuego);
-        vBtnDetener.addEventListener('click',detenerJugador);
+        deshabilitarBoton(vBtnNuevoJuego, nuevoJuego);
+        habilitarBoton(vBtnDetener, detenerJugador);
 
         // recoge la carta de la baraja
         let nuevaCarta = cartasArray.pop();     // saca la carta de la baraja
@@ -212,8 +221,9 @@
 
     function detenerJugador() {
         jugandoEn = 'zonaCompu';        // cambio a zona Compu
-        vBtnPedirCarta.removeEventListener('click', pedirCartaNueva);
-        vBtnDetener.removeEventListener('click', detenerJugador);
+        deshabilitarBoton(vBtnPedirCarta, pedirCartaNueva);
+        deshabilitarBoton(vBtnDetener, detenerJugador);
+
         juegaCompu();
     }
 
@@ -259,7 +269,8 @@
                 delay(texto);
             }
         }
-
+        habilitarBoton(vBtnNuevoJuego,nuevoJuego);
+        deshabilitarBoton(vBtnDetener, detenerJugador);
     }
 
 })()
