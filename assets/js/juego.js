@@ -1,3 +1,4 @@
+
 (() => {
 // VARIABLES
     let cartasArray = [];
@@ -16,11 +17,11 @@
     const zonaJugador = document.getElementById('jugador-cartas');
     const zonaCompu = document.getElementById('computadora-cartas');
     const zonaBTNS = document.getElementById('divBotones');
-    const divScore = document.createElement('div');
-
+    const zonaScore = document.createElement('div');
 
     const zContJug = document.querySelector('#jug small');
     const zContCompu = document.querySelector('#compu small');
+
     let jugandoEn = "";
     let valorContPuntosJug = 0;
     let valorContPuntosCompu = 0;
@@ -32,77 +33,81 @@
 // FUNCIONES
 
     inicio();
-    function habilitarBoton(variable, boton){
-        variable.addEventListener('click', boton);
+
+    function habilitarBoton(variableBoton, funcion){
+        variableBoton.addEventListener('click', funcion);
     }
 
-    function deshabilitarBoton(variable, boton){
-        variable.removeEventListener('click', boton);
+    function deshabilitarBoton(variableBoton, funcion){
+        variableBoton.removeEventListener('click', funcion);
     }
 
-    function salidaNavegador(variable, boton){
-        variable.addEventListener('beforeunload', boton);
+    function salidaNavegador(variableSalir, funcion){
+        variableSalir.addEventListener('beforeunload', funcion);
     }
 
     function delay(texto) {
-
+        // mostrara una alerta despues de 500mlsegundos
         setTimeout(() => alert(texto), 500);
     }
 
     function creaZonaLocalStorageLimpia(){
-        divScore.id = 'localScore';
-        zonaBTNS.append(divScore);
-        divScore.innerHTML = '';    // Limpia la zona divScore de localStorage
+        zonaScore.id = 'localScore';  //
+        zonaBTNS.append(zonaScore);
+        zonaScore.innerHTML = '';    // Limpia la zona divScore de localStorage
     }
 
-    function newScore(){
-
+    function newScoreZERO(){
+        // despues de borrar el score se puede iniciar otro contador
         scores.clear();
-        const scoreObj = Object.fromEntries(scores);
-        const scoresJson = JSON.stringify(scoreObj);
-        localStorage.setItem('scores', scoresJson);
+        const mapScore = Object.fromEntries(scores); //transforma una lista o Array de Arrays(clave, Valor) en un Objeto
+        const scoresStr = JSON.stringify(mapScore); //convierte un objeto o valor de JavaScript en una cadena de texto JSON
+        //Esto es necesario porque localStorage solo puede almacenar cadenas de texto.
+        //por lo que debes convertirlos a una cadena de texto en formato JSON usando JSON.stringify().
+        localStorage.setItem('scores', scoresStr);  //Graba una key y un value convertido en String
         console.log('localStorage puesta a cero');
 
-        deshabilitarBoton(vBtnNewScore, newScore);
+        deshabilitarBoton(vBtnNewScore, newScoreZERO);
         readLocalScore();
     }
 
     function inicio(){
         habilitarBoton(vBtnNuevoJuego, nuevoJuego);
-        habilitarBoton(vBtnNewScore,newScore);
+        habilitarBoton(vBtnNewScore,newScoreZERO);
         salidaNavegador(window, handleBeforeUnload);
         readLocalScore();
     }
 
     function readLocalScore(){
 
+        // forma de dar valores estilo booleana:  o vales lo que haya si hay  o vales 0
+        const scoresStoraged = localStorage.getItem('scores')||"0";   //Map lee
+        const scoresJson = JSON.parse(scoresStoraged);       //Parsea la cadena a Json para leerlo
+        const mapScores = new Map(Object.entries(scoresJson));  //Map carga
 
-        const scoresJsonReading = localStorage.getItem('scores')||"0";   //Map lee
-        const scoresObj = JSON.parse(scoresJsonReading);                //Json graba
-        const newScores = new Map(Object.entries(scoresObj));           //Map carga
-
-        if (newScores.size === 0) {
+        if (mapScores.size === 0) {
             // Establecer los marcadores a cero si no hay datos de otras partidas
-            newScores.set("Jugador", 0);
-            newScores.set("Compu", 0);
+            mapScores.set("Jugador", 0);
+            mapScores.set("Compu", 0);
         }
         creaZonaLocalStorageLimpia();
 
         // Repintado / Machaca el marcador
         // Iterar sobre los elementos del Map usando map() para rellenar la zona con los marcadores
-        newScores.forEach((value, key) => {
+        mapScores.forEach((value, key) => {
             // Crear un elemento h2 para cada marcador
             const h4Element = document.createElement('h4');
             h4Element.textContent = `Partidas Ganadas por ${key}: ${value}`;
 
             // Agregar el elemento h2 al div creado anteriormente
-            divScore.append(h4Element);
+            zonaScore.append(h4Element);
 
         });
-        scores = newScores;   // iguala la variable map scores al localStorages
+        scores = mapScores;   // iguala la variable map scores al localStorages
     }
 
-    function addToScore(player, points) {
+    function updateToScore(player, points) {
+        //actualizamos score de player
         if (scores.has(player)) {
             let currentScore = scores.get(player);
             scores.set(player, currentScore + points);
@@ -110,17 +115,17 @@
             scores.set(player, points);
         }
         // Registra los nuevos datos en localStorage
-        const scoreObj = Object.fromEntries(scores);    //Map
-        const scoreJson = JSON.stringify(scoreObj);     //Json
-        localStorage.setItem('scores', scoreJson);
+        const scoreObj = Object.fromEntries(scores);    //Mapea Map Player points
+        const scoreJson = JSON.stringify(scoreObj);     //Json  to String
+        localStorage.setItem('scores', scoreJson);      //Graba variable  valor
 
         // Lee y Pinta los datos de localStorage.
         readLocalScore();
     }
 
-    function creaBaraja() {
-        for (let i = 0; i < palos.length; i++) {               // Palos
-            for (let j = 0; j < valores.length; j++) {        // Valores
+    function creaBaraja() {                             // Bidimensional
+        for (let i = 0; i < palos.length; i++) {        // Palos   "filas"
+            for (let j = 0; j < valores.length; j++) {  // Valores "columnas"
                 carta = figuras[j] + palos[i];
                 cartasArray.push(carta);
             }
@@ -148,7 +153,7 @@
 
     function despiertaBotones() {
         habilitarBoton(vBtnPedirCarta, pedirCartaNueva);
-        deshabilitarBoton(vBtnNewScore, newScore);
+        deshabilitarBoton(vBtnNewScore, newScoreZERO);
         deshabilitarBoton(vBtnNuevoJuego, nuevoJuego);
         deshabilitarBoton(vBtnDetener, detenerJugador);
 
@@ -181,26 +186,26 @@
     function devValorCarta(str) {
         let strValor = str.slice(0, str.length - 1);
         let indCarta = figuras.indexOf(strValor);
-        let intCarta = valores[indCarta];
+        let valCarta = valores[indCarta];
         //console.log("devValorCarta");
-        return intCarta;
+        return valCarta;
     }
 
-    function devStrImgCarta(str) {
-        let vCartaDir = "assets/cartas/" + str + ".png";
+    function devStrPathImgCarta(str) {
+        let strPathCarta = "assets/cartas/" + str + ".png";
         //console.log("StrCartaDir");
-        return vCartaDir;
+        return strPathCarta;
     }
 
     function creaPintaCarta(carta) {
         // crea la etiqueta img y la agrega a su correspondiente div
         const imgCarta = document.createElement('img');  //crea en memoria
-        imgCarta.setAttribute('src', devStrImgCarta(carta));
+        imgCarta.setAttribute('src', devStrPathImgCarta(carta));
         imgCarta.classList.add('class', 'carta');
         if (jugandoEn === 'zonaJugador'){
-            zonaJugador.append(imgCarta); //pega la imagen
+            zonaJugador.append(imgCarta); //pinta la imagen
         }else{
-            zonaCompu.append(imgCarta);   //pega la imagen
+            zonaCompu.append(imgCarta);   //pinta la imagen
         }
 
         logica();
@@ -223,7 +228,7 @@
 
     function verificaPasadoDePuntosJugador(puntosTotales) {
         // console.log("verifica Puntos Pasados")
-        if (jugandoEn === 'zonaJugador' && puntosTotales > maxPoint) {
+        if (jugandoEn === 'zonaJugador' && puntosTotales >= maxPoint) {
             detenerJugador();
         }
     }
@@ -237,9 +242,11 @@
     }
 
     function juegaCompu() {
+        // Bandera Boolean
         let pasadoJug = valorContPuntosJug > maxPoint;
 
         if (pasadoJug) {
+            // pedirá solo una carta
             pedirCartaNueva();
 
         } else{
@@ -256,39 +263,41 @@
         if (valorContPuntosJug <= maxPoint && valorContPuntosCompu <= maxPoint ){  // ninguno se pasó -> msg
             if (valorContPuntosJug == valorContPuntosCompu) {
                 texto = ("Lo sentimos pero en caso de empate gana la Casa");
-                addToScore("Compu", 1);
+                updateToScore("Compu", 1);
                 delay(texto);
             }else if (valorContPuntosJug > valorContPuntosCompu){
                 texto = ("Enhorabuena  has ganado por puntos a la Casa");
-                addToScore("Jugador", 1);
+                updateToScore("Jugador", 1);
                 delay(texto);
             }else if (valorContPuntosCompu > valorContPuntosJug){
                 texto = ("Lo Sentimos pierdes por Puntos");
-                addToScore("Compu", 1);
+                updateToScore("Compu", 1);
                 delay(texto);
             }
         }else {                                                                 // alguno se ha pasado -> msg
             if (valorContPuntosJug > maxPoint){
                 texto = ("Lo sentimos Te has pasado de 21 Gana la Casa");
-                addToScore("Compu", 1);
+                updateToScore("Compu", 1);
                 delay(texto);
             }else if  (valorContPuntosCompu > maxPoint){
                 texto = ("Enhorabuena  has ganado,  la Casa se ha pasado");
-                addToScore("Jugador", 1);
+                updateToScore("Jugador", 1);
                 delay(texto);
             }
         }
         habilitarBoton(vBtnNuevoJuego,nuevoJuego);
         deshabilitarBoton(vBtnDetener, detenerJugador);
+        cartaSobreMesa = false;
     }
 
     function guardarVictoriaComputadora() {
-        addToScore("Compu", 1);
+        updateToScore("Compu", 1);
     }
 
     function handleBeforeUnload(){
-        // podria haber puesto directamente  addToScore()  pero asi queda mas legible
+        // podria haber puesto directamente  updateToScore()  pero asi queda mas legible
         if(cartaSobreMesa == true)guardarVictoriaComputadora();
     }
 
 })()
+// comentar para Debugear
